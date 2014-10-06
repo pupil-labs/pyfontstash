@@ -1,11 +1,10 @@
 cdef extern from 'gl.h':
     pass
 
-cdef extern from 'fontstash/src/stb_truetype.h':
+cdef extern from 'stb_truetype.h':
     pass
 
-cdef extern from 'fontstash/src/fontstash.h':
-
+cdef extern from 'fontstash.h':
 
     enum: FONS_INVALID
 
@@ -134,7 +133,7 @@ cdef extern from 'fontstash/src/fontstash.h':
 
     void fonsDrawDebug(FONScontext *s, float x, float y)
 
-cdef extern from 'fontstash/src/glfontstash.h':
+cdef extern from 'glfontstash.h':
 
     FONScontext *glfonsCreate(int width, int height, int flags)
     void glfonsDelete(FONScontext* ctx)

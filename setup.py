@@ -15,10 +15,9 @@ else:
 
 
 extensions = [
-	#first submodule: utils
 	Extension(	name="pyfontstash",
 				sources=['pyfontstash.pyx'],
-				include_dirs = includes,
+				include_dirs = includes+['fontstash/src'],
 				libraries = libs,
 				extra_link_args=link_args,
 				extra_compile_args=['-D FONTSTASH_IMPLEMENTATION','-D GLFONTSTASH_IMPLEMENTATION'])
@@ -29,6 +28,6 @@ setup( 	name="pyfontstash",
 		version="0.0.1",
 		author= 'Moritz Kassner',
 		license = 'MIT',
-		description="OpenGL GL font rendering. This module can also be used as a submodule for other cython projects that want to use OpenGL.",
+		description="OpenGL font rendering. This module can also be used as a submodule for other cython projects that want to use OpenGL.",
 		ext_modules=cythonize(extensions)
 )

@@ -13,7 +13,7 @@ FONS_ALIGN_BASELINE = fs.FONS_ALIGN_BASELINE
 FONS_ZERO_TOPLEFT = fs.FONS_ZERO_TOPLEFT
 FONS_ZERO_BOTTOMLEFT = fs.FONS_ZERO_BOTTOMLEFT
 
-cdef class FS_Context:
+cdef class Context:
     cdef fs.FONScontext * ctx
     cdef dict fonts
     def __cinit__(self,atlas_size = (512,512),flags = fs.FONS_ZERO_TOPLEFT):
@@ -84,6 +84,4 @@ cdef class FS_Context:
 
     def draw_debug(self,float x,float y):
         fs.fonsDrawDebug(self.ctx,x,y)
-
-
 

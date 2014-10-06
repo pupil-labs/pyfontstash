@@ -67,7 +67,7 @@ cdef class Context:
     def set_font_id(self,int font_id):
         fs.fonsSetFont(self.ctx,font_id)
 
-    cdef draw_text(self,float x,float y ,bytes text):
+    cpdef draw_text(self,float x,float y ,bytes text):
         cdef float dx = fs.fonsDrawText(self.ctx,x,y,text,NULL)
         return dx
 

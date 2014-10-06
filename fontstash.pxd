@@ -6,6 +6,9 @@ cdef extern from 'fontstash/src/stb_truetype.h':
 
 cdef extern from 'fontstash/src/fontstash.h':
 
+
+    enum: FONS_INVALID
+
     cdef enum FONSflags:
         FONS_ZERO_TOPLEFT
         FONS_ZERO_BOTTOMLEFT

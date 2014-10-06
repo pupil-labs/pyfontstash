@@ -1,4 +1,4 @@
 pyfontstash
 ===========
 
-python bindings for Mikko Mononen's awesome fonstash.
+Python bindings for Mikko Mononen's awesome fontstash.

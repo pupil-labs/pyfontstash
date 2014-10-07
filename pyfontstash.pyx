@@ -36,7 +36,7 @@ cdef class Context:
         def __get__(self):
             return self.fonts
 
-    def set_text_align(self,int align):
+    def set_align(self,int align):
         '''
         bitwise or '|' the following:
         FONS_ALIGN_LEFT
@@ -51,6 +51,12 @@ cdef class Context:
 
     def set_blur(self,float blur):
         fs.fonsSetBlur(self.ctx,blur)
+
+    def push_state(self):
+        fs.fonsPushState(self.ctx)
+
+    def pop_state(self):
+        fs.fonsPopState(self.ctx)
 
     def clear_state(self):
         fs.fonsClearState(self.ctx)
@@ -71,7 +77,17 @@ cdef class Context:
         cdef float dx = fs.fonsDrawText(self.ctx,x,y,text,NULL)
         return dx
 
-    def set_color_float(self,float r, float g, float b, float a):
+    def text_bounds(self,float x,float y, bytes text):
+        cdef float bound_x, bound_y
+        bound_x = fs.fonsTextBounds(self.ctx,x,y,text,NULL,&bound_y)
+        return bound_x,bound_y
+
+    #todo:
+    #fonsLineBounds
+    #fonsVertMetrics
+
+
+    cpdef set_color_float(self,float r, float g, float b, float a):
         cdef unsigned int ir,ig,ib,ia,color
         ir = int(r*255)
         ig = int(g*255)

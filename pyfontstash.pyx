@@ -14,10 +14,10 @@ FONS_ZERO_TOPLEFT = fs.FONS_ZERO_TOPLEFT
 FONS_ZERO_BOTTOMLEFT = fs.FONS_ZERO_BOTTOMLEFT
 
 cdef class Context:
-    def __cinit__(self,atlas_size = (512,512),flags = fs.FONS_ZERO_TOPLEFT):
+    def __cinit__(self,atlas_size = (1024,1024),flags = fs.FONS_ZERO_TOPLEFT):
         self.ctx = fs.glfonsCreate(atlas_size[0],atlas_size[1],flags)
 
-    def __init__(self,atlas_size = (512,512),flags = fs.FONS_ZERO_TOPLEFT):
+    def __init__(self,atlas_size = (1024,1024),flags = fs.FONS_ZERO_TOPLEFT):
         self.fonts = {}
 
     def __dealloc__(self):

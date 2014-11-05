@@ -77,10 +77,67 @@ cdef class Context:
         cdef float dx = fs.fonsDrawText(self.ctx,x,y,text,NULL)
         return dx
 
+    cpdef draw_limited_text(self, float x, float y, bytes text, float width):
+        cdef int idx = len(text)
+        cdef bytes clip
+        #fs.fonsPushState(self.ctx)
+        #fs.fonsSetAlign(self.ctx,0)
+        while idx:
+            clip = text[:idx]
+            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) < width:
+                break
+            idx -=1
+        #fs.fonsPopState(self.ctx)
+
+        if len(text) != len(clip):
+            text = text[:idx-1] + bytes('..')
+
+        return self.draw_text(x,y,text)
+
+
+    cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height = 1):
+        cdef float asc = 0,des = 0,lineh = 0
+        fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
+        line_height *= lineh
+        lines = text.split('\n')
+        for l in lines:
+            fs.fonsDrawText(self.ctx,x,y,l,NULL)
+            y += line_height
+
+
+    cpdef draw_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height = 1):
+        # first we figure out the v space
+        cdef float asc = 0,des = 0,lineh = 0
+        fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
+        line_height *= lineh
+        cdef float max_y = y + height - line_height
+
+        # second we break the text into lines
+        cdef basestring clip
+        words = text.split(' ')
+        cdef int idx = 1, max_idx = len(words)
+
+        # now we draw words
+        while words:
+            clip = ' '.join(words[:idx])
+            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
+                idx = max(0,idx-1)
+                clip = ' '.join(words[:idx])
+                fs.fonsDrawText(self.ctx,x,y,clip,NULL)
+                words = words[idx:]
+                y += line_height
+                if y > max_y:
+                    break
+            idx +=1
+
+        return words
+
+
+
     def text_bounds(self,float x,float y, bytes text):
-        cdef float bound_x, bound_y
-        bound_x = fs.fonsTextBounds(self.ctx,x,y,text,NULL,&bound_y)
-        return bound_x,bound_y
+        cdef float width
+        width = fs.fonsTextBounds(self.ctx,x,y,text,NULL,NULL)
+        return width
 
     #todo:
     #fonsLineBounds

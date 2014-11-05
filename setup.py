@@ -1,26 +1,34 @@
-import os, platform
 from distutils.core import setup
 from distutils.extension import Extension
+import platform
+
 from Cython.Build import cythonize
+
 
 if platform.system() == 'Darwin':
 	includes = ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
 	f = '-framework'
 	link_args = [f, 'OpenGL']
-	libs = []
+	libs = ['OpenGL32']
+	compile_args = ['-D FONTSTASH_IMPLEMENTATION','-D GLFONTSTASH_IMPLEMENTATION']
+elif platform.system() == 'Windows':
+	includes = []
+	libs = ['OpenGL32']
+	link_args = []
+	compile_args = ['/DFONTSTASH_IMPLEMENTATION','/DGLFONTSTASH_IMPLEMENTATION'] 	# http://msdn.microsoft.com/de-de/library/hhzbb5c8.aspx
 else:
-    includes = ['/usr/include/GL',]
-    libs = ['GL']
-    link_args = []
-
+	includes = ['/usr/include/GL',]
+	libs = ['GL']
+	link_args = []
+	compile_args = ['-D FONTSTASH_IMPLEMENTATION','-D GLFONTSTASH_IMPLEMENTATION']
 
 extensions = [
 	Extension(	name="pyfontstash",
 				sources=['pyfontstash.pyx'],
-				include_dirs = includes+['fontstash/src'],
+				include_dirs = includes + ['fontstash/src'],
 				libraries = libs,
 				extra_link_args=link_args,
-				extra_compile_args=['-D FONTSTASH_IMPLEMENTATION','-D GLFONTSTASH_IMPLEMENTATION'])
+				extra_compile_args=compile_args)
 ]
 
 #this package will be compiled into a single.so file.

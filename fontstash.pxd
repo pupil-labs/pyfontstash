@@ -1,6 +1,12 @@
-cdef extern from 'gl.h':
-    pass
-
+IF UNAME_SYSNAME == "Windows":
+    cdef extern from 'Windows.h':
+        pass
+    cdef extern from '<GL/gl.h>':
+        pass
+ELSE:
+    cdef extern from 'gl.h':
+        pass
+    
 cdef extern from 'stb_truetype.h':
     pass
 

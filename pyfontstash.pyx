@@ -91,9 +91,12 @@ cdef class Context:
                 break
             idx -=1
         #fs.fonsPopState(self.ctx)
+        if idx == 0:
+            return x
 
         if len(text) != len(clip):
             text = text[:idx-1] + bytes('..')
+
 
         return self.draw_text(x,y,text)
 

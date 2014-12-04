@@ -9,7 +9,7 @@ if platform.system() == 'Darwin':
 	includes = ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
 	f = '-framework'
 	link_args = [f, 'OpenGL']
-	libs = ['OpenGL32']
+	libs = []
 	compile_args = ['-D FONTSTASH_IMPLEMENTATION','-D GLFONTSTASH_IMPLEMENTATION']
 elif platform.system() == 'Windows':
 	includes = []
@@ -23,8 +23,8 @@ else:
 	compile_args = ['-D FONTSTASH_IMPLEMENTATION','-D GLFONTSTASH_IMPLEMENTATION']
 
 extensions = [
-	Extension(	name="pyfontstash",
-				sources=['pyfontstash.pyx'],
+	Extension(	name="fontstash",
+				sources=['fontstash.pyx'],
 				include_dirs = includes + ['fontstash/src'],
 				libraries = libs,
 				extra_link_args=link_args,

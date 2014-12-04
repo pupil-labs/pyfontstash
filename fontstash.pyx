@@ -1,4 +1,4 @@
-cimport fontstash as fs
+cimport cfontstash as fs
 
 
 #expose some constansts

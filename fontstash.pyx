@@ -79,7 +79,7 @@ cdef class Context:
 
     cpdef draw_limited_text(self, float x, float y, bytes text, float width):
         '''
-        draw text limeted in width, it will render ".." when cut of.
+        draw text limited in width - it will cut off on the right hand side.
         '''
         cdef int idx = len(text)
         cdef bytes clip = <bytes>''
@@ -95,7 +95,7 @@ cdef class Context:
             return x
 
         if len(text) != len(clip):
-            text = text[:idx-1] + bytes('..')
+            text = text[:idx-1] #+ bytes('..')
 
 
         return self.draw_text(x,y,text)
@@ -103,7 +103,7 @@ cdef class Context:
 
     cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height = 1):
         '''
-        draw multiple lines of text delimered by "\n"
+        draw multiple lines of text delimited by "\n"
         '''
         cdef float asc = 0,des = 0,lineh = 0
         fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
@@ -147,6 +147,9 @@ cdef class Context:
 
 
     def text_bounds(self,float x,float y, bytes text):
+        '''
+        get the width of a text
+        '''
         cdef float width
         width = fs.fonsTextBounds(self.ctx,x,y,text,NULL,NULL)
         return width

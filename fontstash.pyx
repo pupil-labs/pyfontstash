@@ -73,7 +73,7 @@ cdef class Context:
     def set_font_id(self,int font_id):
         fs.fonsSetFont(self.ctx,font_id)
 
-    cpdef draw_text(self,float x,float y ,bytes text):
+    cpdef draw_text(self,float x,float y,bytes text):
         cdef float dx = fs.fonsDrawText(self.ctx,x,y,text,NULL)
         return dx
 
@@ -87,7 +87,7 @@ cdef class Context:
         #fs.fonsSetAlign(self.ctx,0)
         while idx:
             clip = text[:idx]
-            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) < width:
+            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
                 break
             idx -=1
         #fs.fonsPopState(self.ctx)
@@ -100,6 +100,22 @@ cdef class Context:
 
         return self.draw_text(x,y,text)
 
+    cpdef get_first_char_idx(self, bytes text, float width):
+        '''
+        get the clip index for a given width
+        '''
+        cdef int idx = len(text)
+        cdef bytes clip = <bytes>''
+        # reverse the text
+        text = text[::-1]
+
+        while idx:
+            clip = text[:idx]
+            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
+                break
+            idx -=1
+            
+        return len(text)-idx
 
     cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height = 1):
         '''

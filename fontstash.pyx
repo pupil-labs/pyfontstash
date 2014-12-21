@@ -175,14 +175,14 @@ cdef class Context:
     #fonsVertMetrics
 
 
-    cpdef set_color_float(self,float r, float g, float b, float a):
-        cdef unsigned int ir,ig,ib,ia,color
-        ir = int(r*255)
-        ig = int(g*255)
-        ib = int(b*255)
-        ia = int(a*255)
-        color = fs.glfonsRGBA(ir,ig,ib,ia)
-        fs.fonsSetColor(self.ctx,color)
+    cpdef set_color_float(self,tuple color):
+        cdef unsigned int ir,ig,ib,ia,c
+        ir = int(color[0]*255)
+        ig = int(color[1]*255)
+        ib = int(color[2]*255)
+        ia = int(color[3]*255)
+        c = fs.glfonsRGBA(ir,ig,ib,ia)
+        fs.fonsSetColor(self.ctx,c)
 
     def draw_debug(self,float x,float y):
         fs.fonsDrawDebug(self.ctx,x,y)

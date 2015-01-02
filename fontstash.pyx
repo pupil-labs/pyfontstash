@@ -73,7 +73,7 @@ cdef class Context:
     def set_font_id(self,int font_id):
         fs.fonsSetFont(self.ctx,font_id)
 
-    cpdef draw_text(self,float x,float y ,bytes text):
+    cpdef draw_text(self,float x,float y,bytes text):
         cdef float dx = fs.fonsDrawText(self.ctx,x,y,text,NULL)
         return dx
 
@@ -87,7 +87,7 @@ cdef class Context:
         #fs.fonsSetAlign(self.ctx,0)
         while idx:
             clip = text[:idx]
-            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) < width:
+            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
                 break
             idx -=1
         #fs.fonsPopState(self.ctx)
@@ -100,6 +100,22 @@ cdef class Context:
 
         return self.draw_text(x,y,text)
 
+    cpdef get_first_char_idx(self, bytes text, float width):
+        '''
+        get the clip index for a given width
+        '''
+        cdef int idx = len(text)
+        cdef bytes clip = <bytes>''
+        # reverse the text
+        text = text[::-1]
+
+        while idx:
+            clip = text[:idx]
+            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
+                break
+            idx -=1
+            
+        return len(text)-idx
 
     cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height = 1):
         '''
@@ -159,14 +175,14 @@ cdef class Context:
     #fonsVertMetrics
 
 
-    cpdef set_color_float(self,float r, float g, float b, float a):
-        cdef unsigned int ir,ig,ib,ia,color
-        ir = int(r*255)
-        ig = int(g*255)
-        ib = int(b*255)
-        ia = int(a*255)
-        color = fs.glfonsRGBA(ir,ig,ib,ia)
-        fs.fonsSetColor(self.ctx,color)
+    cpdef set_color_float(self,tuple color):
+        cdef unsigned int ir,ig,ib,ia,c
+        ir = int(color[0]*255)
+        ig = int(color[1]*255)
+        ib = int(color[2]*255)
+        ia = int(color[3]*255)
+        c = fs.glfonsRGBA(ir,ig,ib,ia)
+        fs.fonsSetColor(self.ctx,c)
 
     def draw_debug(self,float x,float y):
         fs.fonsDrawDebug(self.ctx,x,y)

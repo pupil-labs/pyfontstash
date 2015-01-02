@@ -17,9 +17,10 @@ cdef class Context:
     cdef dict fonts
 
     cpdef draw_text(self,float x,float y ,bytes text)
-    cpdef set_color_float(self,float r, float g, float b, float a)
+    cpdef set_color_float(self,tuple color)
 
     #custom conviniece methods
     cpdef draw_limited_text(self, float x, float y, bytes text, float width)
+    cpdef get_first_char_idx(self, bytes text, float width)
     cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height =*)
     cpdef draw_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height =*)

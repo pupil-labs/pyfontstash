@@ -114,7 +114,7 @@ cdef class Context:
             if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
                 break
             idx -=1
-            
+
         return len(text)-idx
 
     cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height = 1):
@@ -145,11 +145,16 @@ cdef class Context:
         words = text.split(' ')
         cdef int idx = 1, max_idx = len(words)
 
+        cdef bint first = True
         # now we draw words
         while words:
             clip = ' '.join(words[:idx])
             if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
-                idx = max(0,idx-1)
+                if first == True:
+                    idx = max(0,idx-1)
+                    first = False
+                else:
+                    idx = max(0,idx-2)
                 clip = ' '.join(words[:idx])
                 fs.fonsDrawText(self.ctx,x,y,clip,NULL)
                 words = words[idx:]
@@ -158,8 +163,41 @@ cdef class Context:
                     break
             idx +=1
 
-        return words
+        return words,y
 
+    cpdef compute_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height = 1):
+        '''
+        draw a string of text breaking at the bounds.
+        '''
+        # first we figure out the v space
+        cdef float asc = 0,des = 0,lineh = 0
+        fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
+        line_height *= lineh
+        cdef float max_y = y + height - line_height
+
+        # second we break the text into lines
+        cdef basestring clip
+        words = text.split(' ')
+        cdef int idx = 1, max_idx = len(words)
+
+        cdef bint first = True
+        # now we draw words
+        while words:
+            clip = ' '.join(words[:idx])
+            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
+                if first == True:
+                    idx = max(0,idx-1)
+                    first = False
+                else:
+                    idx = max(0,idx-2)
+                clip = ' '.join(words[:idx])
+                words = words[idx:]
+                y += line_height
+                if y > max_y:
+                    break
+            idx +=1
+
+        return words,y
 
 
     def text_bounds(self,float x,float y, bytes text):

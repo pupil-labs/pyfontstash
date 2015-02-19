@@ -1,8 +1,7 @@
 cimport cfontstash as fs
 
 
-#expose some constansts
-
+#expose some constansts when c imported
 FONS_ALIGN_LEFT = fs.FONS_ALIGN_LEFT
 FONS_ALIGN_CENTER = fs.FONS_ALIGN_CENTER
 FONS_ALIGN_RIGHT = fs.FONS_ALIGN_RIGHT
@@ -12,6 +11,8 @@ FONS_ALIGN_BOTTOM = fs.FONS_ALIGN_BOTTOM
 FONS_ALIGN_BASELINE = fs.FONS_ALIGN_BASELINE
 FONS_ZERO_TOPLEFT = fs.FONS_ZERO_TOPLEFT
 FONS_ZERO_BOTTOMLEFT = fs.FONS_ZERO_BOTTOMLEFT
+
+
 
 cdef class Context:
     def __cinit__(self,atlas_size = (1024,1024),flags = fs.FONS_ZERO_TOPLEFT):
@@ -48,6 +49,11 @@ cdef class Context:
         FONS_ALIGN_BASELINE
         '''
         fs.fonsSetAlign(self.ctx,align)
+
+    def set_align_string(self,v_align='left',h_align='top'):
+        v_align = {'left':FONS_ALIGN_LEFT,'center':FONS_ALIGN_CENTER,'right':FONS_ALIGN_RIGHT}[v_align]
+        h_align = {'top':FONS_ALIGN_TOP,'middle':FONS_ALIGN_MIDDLE,'bottom':FONS_ALIGN_BOTTOM}[h_align]
+        self.set_align(v_align | h_align)
 
     def set_blur(self,float blur):
         fs.fonsSetBlur(self.ctx,blur)

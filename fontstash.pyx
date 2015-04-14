@@ -149,25 +149,21 @@ cdef class Context:
         # second we break the text into lines
         cdef basestring clip
         words = text.split(' ')
-        cdef int idx = 1, max_idx = len(words)
+        cdef int idx = 0, max_idx = len(words)
 
-        cdef bint first = True
         # now we draw words
         while words:
-            clip = ' '.join(words[:idx])
-            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
-                if first == True:
-                    idx = max(0,idx-1)
-                    first = False
-                else:
-                    idx = max(0,idx-2)
+            clip = ' '.join(words[:idx+1])
+            if idx >= max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
                 clip = ' '.join(words[:idx])
                 fs.fonsDrawText(self.ctx,x,y,clip,NULL)
                 words = words[idx:]
+                idx = 1 #always draw the first word.
                 y += line_height
                 if y > max_y:
                     break
-            idx +=1
+            else:
+                idx +=1
 
         return words,y
 

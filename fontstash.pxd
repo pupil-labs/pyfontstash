@@ -25,3 +25,4 @@ cdef class Context:
     cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height =*)
     cpdef compute_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height =*)
     cpdef draw_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height =*)
+    cpdef vertical_metrics(self)

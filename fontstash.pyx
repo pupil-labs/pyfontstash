@@ -212,7 +212,11 @@ cdef class Context:
 
     #todo:
     #fonsLineBounds
-    #fonsVertMetrics
+
+    cpdef vertical_metrics(self):
+        cdef float asc = 0,des = 0,lineh = 0
+        fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
+        return asc,des,lineh
 
 
     cpdef set_color_float(self,tuple color):

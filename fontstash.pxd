@@ -26,3 +26,4 @@ cdef class Context:
     cpdef compute_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height =*)
     cpdef draw_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height =*)
     cpdef vertical_metrics(self)
+    cpdef char_cumulative_width(self, float x, float y, bytes text)

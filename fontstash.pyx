@@ -202,7 +202,7 @@ cdef class Context:
         return words,y
 
 
-    cpdef char_cumulative_width(self,float x, float y, bytes text):
+    cpdef char_cumulative_width(self,float x, float y, bytes chars):
         '''
         return a list with the cumulative width of each char in given text
         can be used as a map for positioning the caret
@@ -210,11 +210,11 @@ cdef class Context:
         '''
 
         # break the text string into chars
-        chars = list(text)
         cdef int total = 0
-        running_sum = [0]
-        for i in chars:
-            total += self.text_bounds(x,y,i)
+        cdef list running_sum = [0]
+        cdef bytes c
+        for c in chars:
+            total += self.text_bounds(x,y,c)
             running_sum.append(total)
         return running_sum
 

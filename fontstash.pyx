@@ -87,23 +87,43 @@ cdef class Context:
         '''
         draw text limited in width - it will cut off on the right hand side.
         '''
-        cdef int idx = len(text)
-        cdef bytes clip = <bytes>''
-        #fs.fonsPushState(self.ctx)
-        #fs.fonsSetAlign(self.ctx,0)
-        while idx:
-            clip = text[:idx]
-            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
-                break
-            idx -=1
-        #fs.fonsPopState(self.ctx)
-        if idx == 0:
-            return x
 
-        if len(text) != len(clip):
-            text = text[:idx-1] #+ bytes('..')
+        if fs.fonsTextBounds(self.ctx, 0,0, text, NULL, NULL) <= width:
+            #early exit it fits
+            return self.draw_text(x,y,text)
+
+        if width <= 0:
+            #early exit even the smallest char would not fit
+            return self.draw_text(x,y,bytes(''))
 
 
+
+        # start_text_clip = int(width/avg_char_width)
+        cdef float avg_char_width = fs.fonsTextBounds(self.ctx, 0,0, 'o', NULL, NULL)
+        cdef int max_idx = len(text)
+        cdef int idx = int(width/avg_char_width)
+        cdef bytes clip = <bytes>text[:idx]
+        cdef bint initial_guess_fits = fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width
+
+
+        if initial_guess_fits:
+            #we add chars until it does not fit. then go back one
+            while 0 <= idx <= max_idx:
+                idx +=1
+                clip = text[:idx]
+                if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
+                    idx -=1
+                    break
+        else:
+            #we remove chars until it does fit.
+            while 0 <= idx <= max_idx:
+                idx -=1
+                clip = text[:idx]
+                if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) < width:
+                    break
+
+
+        text = text[:idx] #+ bytes('..')
         return self.draw_text(x,y,text)
 
     cpdef get_first_char_idx(self, bytes text, float width):

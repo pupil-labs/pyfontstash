@@ -24,7 +24,7 @@ cdef class Context:
     def __dealloc__(self):
         fs.glfonsDelete(self.ctx)
 
-    def add_font(self, bytes name, bytes font_loc):
+    def add_font(self, basestring name, basestring font_loc):
         cdef int font_id = fs.FONS_INVALID
 
         font_id = fs.fonsAddFont(self.ctx, name,font_loc)
@@ -73,77 +73,78 @@ cdef class Context:
     def set_spacing(self, float spacing):
         fs.fonsSetSpacing(self.ctx,spacing)
 
-    def set_font(self,bytes font_name):
+    def set_font(self,basestring font_name):
         fs.fonsSetFont(self.ctx,self.fonts[font_name])
 
     def set_font_id(self,int font_id):
         fs.fonsSetFont(self.ctx,font_id)
 
-    cpdef draw_text(self,float x,float y,bytes text):
-        cdef float dx = fs.fonsDrawText(self.ctx,x,y,text,NULL)
+    cpdef draw_text(self,float x,float y,basestring text):
+        cdef float dx = fs.fonsDrawText(self.ctx,x,y,text.encode('utf-8'),NULL)
         return dx
 
-    cpdef draw_limited_text(self, float x, float y, bytes text, float width):
+    cpdef draw_limited_text(self, float x, float y, basestring text, float width):
         '''
         draw text limited in width - it will cut off on the right hand side.
         '''
-
-        if fs.fonsTextBounds(self.ctx, 0,0, text, NULL, NULL) <= width:
+        cdef unicode utext = text.decode('utf-8')
+        if fs.fonsTextBounds(self.ctx, 0,0, utext.encode('utf-8'), NULL, NULL) <= width:
             #early exit it fits
-            return self.draw_text(x,y,text)
+            return self.draw_text(x,y,utext)
 
         if width <= 0:
             #early exit even the smallest char would not fit
-            return self.draw_text(x,y,bytes(''))
+            return self.draw_text(x,y,'')
 
 
 
         # start_text_clip = int(width/avg_char_width)
         cdef float avg_char_width = fs.fonsTextBounds(self.ctx, 0,0, 'o', NULL, NULL)
-        cdef int max_idx = len(text)
+        cdef int max_idx = len(utext)
         cdef int idx = int(width/avg_char_width)
-        cdef bytes clip = <bytes>text[:idx]
-        cdef bint initial_guess_fits = fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width
+        cdef unicode clip = utext[:idx]
+        cdef bint initial_guess_fits = fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) <= width
 
 
         if initial_guess_fits:
             #we add chars until it does not fit. then go back one
             while 0 <= idx <= max_idx:
                 idx +=1
-                clip = text[:idx]
-                if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
+                clip = utext[:idx]
+                if fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) > width:
                     idx -=1
                     break
         else:
             #we remove chars until it does fit.
             while 0 <= idx <= max_idx:
                 idx -=1
-                clip = text[:idx]
-                if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) < width:
+                clip = utext[:idx]
+                if fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) < width:
                     break
 
 
-        text = text[:idx] #+ bytes('..')
-        return self.draw_text(x,y,text)
+        utext = utext[:idx] #+ '..'
+        return self.draw_text(x,y,utext)
 
-    cpdef get_first_char_idx(self, bytes text, float width):
+    cpdef get_first_char_idx(self, basestring text, float width):
         '''
         get the clip index for a given width
         '''
-        cdef int idx = len(text)
-        cdef bytes clip = <bytes>''
+        cdef unicode utext = text.decode('utf-8')
+        cdef int idx = len(utext)
+        cdef unicode clip
         # reverse the text
-        text = text[::-1]
+        utext = utext[::-1]
 
         while idx:
-            clip = text[:idx]
-            if fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) <= width:
+            clip = utext[:idx]
+            if fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) <= width:
                 break
             idx -=1
 
-        return len(text)-idx
+        return len(utext)-idx
 
-    cpdef draw_multi_line_text(self, float x, float y, bytes text, float line_height = 1):
+    cpdef draw_multi_line_text(self, float x, float y, basestring text, float line_height = 1):
         '''
         draw multiple lines of text delimited by "\n"
         '''
@@ -152,14 +153,17 @@ cdef class Context:
         line_height *= lineh
         lines = text.split('\n')
         for l in lines:
-            fs.fonsDrawText(self.ctx,x,y,l,NULL)
+            fs.fonsDrawText(self.ctx,x,y,l.encode('utf-8'),NULL)
             y += line_height
 
 
-    cpdef draw_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height = 1):
+    cpdef draw_breaking_text(self, float x, float y, basestring text, float width,float height,float line_height = 1):
         '''
         draw a string of text breaking at the bounds.
         '''
+
+        cdef unicode utext = text.decode('utf-8')
+
         # first we figure out the v space
         cdef float asc = 0,des = 0,lineh = 0
         fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
@@ -167,16 +171,16 @@ cdef class Context:
         cdef float max_y = y + height - line_height
 
         # second we break the text into lines
-        cdef basestring clip
-        words = text.split(' ')
+        cdef unicode clip
+        cdef list words = utext.split(' ')
         cdef int idx = 0, max_idx = len(words)
 
         # now we draw words
         while words:
             clip = ' '.join(words[:idx+1])
-            if idx >= max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
-                clip = ' '.join(words[:idx])
-                fs.fonsDrawText(self.ctx,x,y,clip,NULL)
+            if idx >= max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) > width:
+                clip = u' '.join(words[:idx])
+                fs.fonsDrawText(self.ctx,x,y,clip.encode('utf-8'),NULL)
                 words = words[idx:]
                 idx = 1 #always draw the first word.
                 y += line_height
@@ -187,10 +191,13 @@ cdef class Context:
 
         return words,y
 
-    cpdef compute_breaking_text(self, float x, float y, bytes text, float width,float height,float line_height = 1):
+    cpdef compute_breaking_text(self, float x, float y, basestring text, float width,float height,float line_height = 1):
         '''
         draw a string of text breaking at the bounds.
         '''
+        cdef unicode utext = text.decode('utf-8')
+
+
         # first we figure out the v space
         cdef float asc = 0,des = 0,lineh = 0
         fs.fonsVertMetrics(self.ctx, &asc,&des,&lineh)
@@ -198,21 +205,21 @@ cdef class Context:
         cdef float max_y = y + height - line_height
 
         # second we break the text into lines
-        cdef basestring clip
-        words = text.split(' ')
+        cdef unicode clip
+        cdef list words = utext.split(' ')
         cdef int idx = 1, max_idx = len(words)
 
         cdef bint first = True
         # now we draw words
         while words:
             clip = ' '.join(words[:idx])
-            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip, NULL, NULL) > width:
+            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) > width:
                 if first == True:
                     idx = max(0,idx-1)
                     first = False
                 else:
                     idx = max(0,idx-2)
-                clip = ' '.join(words[:idx])
+                clip = u' '.join(words[:idx])
                 words = words[idx:]
                 y += line_height
                 if y > max_y:
@@ -222,29 +229,28 @@ cdef class Context:
         return words,y
 
 
-    cpdef char_cumulative_width(self,float x, float y, bytes chars):
+    cpdef char_cumulative_width(self,float x, float y, basestring text):
         '''
         return a list with the cumulative width of each char in given text
         can be used as a map for positioning the caret
         or determining if a mouse position is close to a caret position
         '''
-
+        cdef unicode utext = text.decode('utf-8')
         # break the text string into chars
         cdef int total = 0
         cdef list running_sum = [0]
-        cdef bytes c
-        for c in chars:
+        for c in utext:
             total += self.text_bounds(x,y,c)
             running_sum.append(total)
         return running_sum
 
 
-    def text_bounds(self,float x,float y, bytes text):
+    def text_bounds(self,float x,float y, basestring text):
         '''
         get the width of a text
         '''
         cdef float width
-        width = fs.fonsTextBounds(self.ctx,x,y,text,NULL,NULL)
+        width = fs.fonsTextBounds(self.ctx,x,y,text.encode('utf-8'),NULL,NULL)
         return width
 
     #todo:

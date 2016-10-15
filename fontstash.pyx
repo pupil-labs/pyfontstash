@@ -12,6 +12,18 @@ FONS_ALIGN_BASELINE = fs.FONS_ALIGN_BASELINE
 FONS_ZERO_TOPLEFT = fs.FONS_ZERO_TOPLEFT
 FONS_ZERO_BOTTOMLEFT = fs.FONS_ZERO_BOTTOMLEFT
 
+cdef unicode _ustring(basestring s):
+    if type(s) is unicode:
+        return <unicode>s
+    else:
+        return (<bytes>s).decode('utf-8')
+
+cdef bytes _utf8_string(basestring s):
+    if type(s) is unicode:
+        return (<unicode>s).encode('utf-8')
+    else:
+        return <bytes>s
+
 
 
 cdef class Context:
@@ -80,15 +92,15 @@ cdef class Context:
         fs.fonsSetFont(self.ctx,font_id)
 
     cpdef draw_text(self,float x,float y,basestring text):
-        cdef float dx = fs.fonsDrawText(self.ctx,x,y,text.encode('utf-8'),NULL)
+        cdef float dx = fs.fonsDrawText(self.ctx,x,y,_utf8_string(text),NULL)
         return dx
 
     cpdef draw_limited_text(self, float x, float y, basestring text, float width):
         '''
         draw text limited in width - it will cut off on the right hand side.
         '''
-        cdef unicode utext = text.decode('utf-8')
-        if fs.fonsTextBounds(self.ctx, 0,0, utext.encode('utf-8'), NULL, NULL) <= width:
+        cdef unicode utext = _ustring(text)
+        if fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(utext), NULL, NULL) <= width:
             #early exit it fits
             return self.draw_text(x,y,utext)
 
@@ -103,7 +115,7 @@ cdef class Context:
         cdef int max_idx = len(utext)
         cdef int idx = int(width/avg_char_width)
         cdef unicode clip = utext[:idx]
-        cdef bint initial_guess_fits = fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) <= width
+        cdef bint initial_guess_fits = fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(clip), NULL, NULL) <= width
 
 
         if initial_guess_fits:
@@ -111,7 +123,7 @@ cdef class Context:
             while 0 <= idx <= max_idx:
                 idx +=1
                 clip = utext[:idx]
-                if fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) > width:
+                if fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(clip), NULL, NULL) > width:
                     idx -=1
                     break
         else:
@@ -119,7 +131,7 @@ cdef class Context:
             while 0 <= idx <= max_idx:
                 idx -=1
                 clip = utext[:idx]
-                if fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) < width:
+                if fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(clip), NULL, NULL) < width:
                     break
 
 
@@ -130,7 +142,7 @@ cdef class Context:
         '''
         get the clip index for a given width
         '''
-        cdef unicode utext = text.decode('utf-8')
+        cdef unicode utext = _ustring(text)
         cdef int idx = len(utext)
         cdef unicode clip
         # reverse the text
@@ -138,7 +150,7 @@ cdef class Context:
 
         while idx:
             clip = utext[:idx]
-            if fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) <= width:
+            if fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(clip), NULL, NULL) <= width:
                 break
             idx -=1
 
@@ -153,7 +165,7 @@ cdef class Context:
         line_height *= lineh
         lines = text.split('\n')
         for l in lines:
-            fs.fonsDrawText(self.ctx,x,y,l.encode('utf-8'),NULL)
+            fs.fonsDrawText(self.ctx,x,y,_utf8_string(l),NULL)
             y += line_height
 
 
@@ -162,7 +174,7 @@ cdef class Context:
         draw a string of text breaking at the bounds.
         '''
 
-        cdef unicode utext = text.decode('utf-8')
+        cdef unicode utext = _ustring(text)
 
         # first we figure out the v space
         cdef float asc = 0,des = 0,lineh = 0
@@ -178,9 +190,9 @@ cdef class Context:
         # now we draw words
         while words:
             clip = ' '.join(words[:idx+1])
-            if idx >= max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) > width:
+            if idx >= max_idx or fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(clip), NULL, NULL) > width:
                 clip = u' '.join(words[:idx])
-                fs.fonsDrawText(self.ctx,x,y,clip.encode('utf-8'),NULL)
+                fs.fonsDrawText(self.ctx,x,y,_utf8_string(clip),NULL)
                 words = words[idx:]
                 idx = 1 #always draw the first word.
                 y += line_height
@@ -195,7 +207,7 @@ cdef class Context:
         '''
         draw a string of text breaking at the bounds.
         '''
-        cdef unicode utext = text.decode('utf-8')
+        cdef unicode utext = _ustring(text)
 
 
         # first we figure out the v space
@@ -213,7 +225,7 @@ cdef class Context:
         # now we draw words
         while words:
             clip = ' '.join(words[:idx])
-            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, clip.encode('utf-8'), NULL, NULL) > width:
+            if idx > max_idx or fs.fonsTextBounds(self.ctx, 0,0, _utf8_string(clip), NULL, NULL) > width:
                 if first == True:
                     idx = max(0,idx-1)
                     first = False
@@ -235,7 +247,7 @@ cdef class Context:
         can be used as a map for positioning the caret
         or determining if a mouse position is close to a caret position
         '''
-        cdef unicode utext = text.decode('utf-8')
+        cdef unicode utext = _ustring(text)
         # break the text string into chars
         cdef int total = 0
         cdef list running_sum = [0]
@@ -250,7 +262,7 @@ cdef class Context:
         get the width of a text
         '''
         cdef float width
-        width = fs.fonsTextBounds(self.ctx,x,y,text.encode('utf-8'),NULL,NULL)
+        width = fs.fonsTextBounds(self.ctx,x,y,_utf8_string(text),NULL,NULL)
         return width
 
     #todo:

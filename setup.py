@@ -33,7 +33,7 @@ extensions = [
 
 #this package will be compiled into a single.so file.
 setup( 	name="pyfontstash",
-		version="0.0.1",
+		version="0.2",
 		author= 'Moritz Kassner',
 		license = 'MIT',
 		description="OpenGL font rendering. This module can also be used as a submodule for other cython projects that want to use OpenGL.",

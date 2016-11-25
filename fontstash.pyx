@@ -12,13 +12,13 @@ FONS_ALIGN_BASELINE = fs.FONS_ALIGN_BASELINE
 FONS_ZERO_TOPLEFT = fs.FONS_ZERO_TOPLEFT
 FONS_ZERO_BOTTOMLEFT = fs.FONS_ZERO_BOTTOMLEFT
 
-cdef unicode _to_unicode(basestring s):
+cdef unicode _to_unicode(object s):
     if type(s) is unicode:
         return <unicode>s
     else:
         return (<bytes>s).decode('utf-8')
 
-cdef bytes _to_utf8_bytes(basestring s):
+cdef bytes _to_utf8_bytes(object s):
     if type(s) is unicode:
         return (<unicode>s).encode('utf-8')
     else:
@@ -36,7 +36,7 @@ cdef class Context:
     def __dealloc__(self):
         fs.glfonsDelete(self.ctx)
 
-    def add_font(self, basestring name, basestring font_loc):
+    def add_font(self, object name, object font_loc):
         cdef int font_id = fs.FONS_INVALID
 
         font_id = fs.fonsAddFont(self.ctx, name,font_loc)
@@ -85,20 +85,21 @@ cdef class Context:
     def set_spacing(self, float spacing):
         fs.fonsSetSpacing(self.ctx,spacing)
 
-    def set_font(self,basestring font_name):
+    def set_font(self,object font_name):
         fs.fonsSetFont(self.ctx,self.fonts[font_name])
 
     def set_font_id(self,int font_id):
         fs.fonsSetFont(self.ctx,font_id)
 
-    cpdef draw_text(self,float x,float y,basestring text):
+    cpdef draw_text(self,float x,float y,object text):
         cdef float dx = fs.fonsDrawText(self.ctx,x,y,_to_utf8_bytes(text),NULL)
         return dx
 
-    cpdef draw_limited_text(self, float x, float y, basestring text, float width):
+    cpdef draw_limited_text(self, float x, float y, text, float width):
         '''
         draw text limited in width - it will cut off on the right hand side.
         '''
+        print(type(text))
         cdef unicode utext = _to_unicode(text)
         if fs.fonsTextBounds(self.ctx, 0,0, _to_utf8_bytes(utext), NULL, NULL) <= width:
             #early exit it fits
@@ -138,7 +139,7 @@ cdef class Context:
         utext = utext[:idx] #+ '..'
         return self.draw_text(x,y,utext)
 
-    cpdef get_first_char_idx(self, basestring text, float width):
+    cpdef get_first_char_idx(self, object text, float width):
         '''
         get the clip index for a given width
         '''
@@ -156,7 +157,7 @@ cdef class Context:
 
         return len(utext)-idx
 
-    cpdef draw_multi_line_text(self, float x, float y, basestring text, float line_height = 1):
+    cpdef draw_multi_line_text(self, float x, float y, object text, float line_height = 1):
         '''
         draw multiple lines of text delimited by "\n"
         '''
@@ -169,7 +170,7 @@ cdef class Context:
             y += line_height
 
 
-    cpdef draw_breaking_text(self, float x, float y, basestring text, float width,float height,float line_height = 1):
+    cpdef draw_breaking_text(self, float x, float y, object text, float width,float height,float line_height = 1):
         '''
         draw a string of text breaking at the bounds.
         '''
@@ -203,7 +204,7 @@ cdef class Context:
 
         return words,y
 
-    cpdef compute_breaking_text(self, float x, float y, basestring text, float width,float height,float line_height = 1):
+    cpdef compute_breaking_text(self, float x, float y, object text, float width,float height,float line_height = 1):
         '''
         draw a string of text breaking at the bounds.
         '''
@@ -241,7 +242,7 @@ cdef class Context:
         return words,y
 
 
-    cpdef char_cumulative_width(self,float x, float y, basestring text):
+    cpdef char_cumulative_width(self,float x, float y, object text):
         '''
         return a list with the cumulative width of each char in given text
         can be used as a map for positioning the caret
@@ -257,7 +258,7 @@ cdef class Context:
         return running_sum
 
 
-    def text_bounds(self,float x,float y, basestring text):
+    def text_bounds(self,float x,float y, object text):
         '''
         get the width of a text
         '''

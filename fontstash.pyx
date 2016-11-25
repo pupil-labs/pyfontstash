@@ -39,7 +39,7 @@ cdef class Context:
     def add_font(self, object name, object font_loc):
         cdef int font_id = fs.FONS_INVALID
 
-        font_id = fs.fonsAddFont(self.ctx, name,font_loc)
+        font_id = fs.fonsAddFont(self.ctx, _to_utf8_bytes(name), _to_utf8_bytes(font_loc))
         if font_id == fs.FONS_INVALID:
             raise Exception("Font could not be loaded from '%s'."%font_loc)
         else:
@@ -99,7 +99,6 @@ cdef class Context:
         '''
         draw text limited in width - it will cut off on the right hand side.
         '''
-        print(type(text))
         cdef unicode utext = _to_unicode(text)
         if fs.fonsTextBounds(self.ctx, 0,0, _to_utf8_bytes(utext), NULL, NULL) <= width:
             #early exit it fits
